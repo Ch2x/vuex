@@ -3,12 +3,13 @@ import { assert, forEachValue } from '../util'
 
 export default class ModuleCollection {
   constructor (rawRootModule) {
-    // register root module (Vuex.Store options)
+    // register root module (Vuex.Store options) 注册根模块(Vuex.Store options)
     this.register([], rawRootModule, false)
   }
 
   get (path) {
     return path.reduce((module, key) => {
+      console.log(module,key)
       return module.getChild(key)
     }, this.root)
   }
@@ -31,14 +32,16 @@ export default class ModuleCollection {
     }
 
     const newModule = new Module(rawModule, runtime)
+    // 根模块注册
     if (path.length === 0) {
       this.root = newModule
     } else {
+      // 子模块
       const parent = this.get(path.slice(0, -1))
       parent.addChild(path[path.length - 1], newModule)
     }
 
-    // register nested modules
+    // register nested modules 模块嵌套注册
     if (rawModule.modules) {
       forEachValue(rawModule.modules, (rawChildModule, key) => {
         this.register(path.concat(key), rawChildModule, runtime)

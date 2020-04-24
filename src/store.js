@@ -25,19 +25,20 @@ export class Store {
       strict = false
     } = options
 
+    // 存储内部状态
     // store internal state
     this._committing = false
     this._actions = Object.create(null)
     this._actionSubscribers = []
     this._mutations = Object.create(null)
     this._wrappedGetters = Object.create(null)
-    this._modules = new ModuleCollection(options)
+    this._modules = new ModuleCollection(options) // 模块注册收集
     this._modulesNamespaceMap = Object.create(null)
     this._subscribers = []
     this._watcherVM = new Vue()
     this._makeLocalGettersCache = Object.create(null)
 
-    // bind commit and dispatch to self
+    // bind commit and dispatch to self 绑定commit 和 dispatch
     const store = this
     const { dispatch, commit } = this
     this.dispatch = function boundDispatch (type, payload) {
@@ -50,20 +51,21 @@ export class Store {
     // strict mode
     this.strict = strict
 
-    const state = this._modules.root.state
+    const state = this._modules.root.state // 获取根模块的state
 
-    // init root module.
-    // this also recursively registers all sub-modules
-    // and collects all module getters inside this._wrappedGetters
+    // init root module. 初始化根模块
+    // this also recursively registers all sub-modules  同时递归注册所有的子模块
+    // and collects all module getters inside this._wrappedGettersbing  和收集所有模块的gettter
     installModule(this, state, [], this._modules.root)
 
-    // initialize the store vm, which is responsible for the reactivity
+    // initialize the store vm, which is responsible for the reactivity 初始化store实例 负责响应式
     // (also registers _wrappedGetters as computed properties)
     resetStoreVM(this, state)
 
-    // apply plugins
+    // apply plugins 插件
     plugins.forEach(plugin => plugin(this))
 
+    // devtool插件
     const useDevtools = options.devtools !== undefined ? options.devtools : Vue.config.devtools
     if (useDevtools) {
       devtoolPlugin(this)
@@ -318,7 +320,7 @@ function installModule (store, rootState, path, module, hot) {
   const isRoot = !path.length
   const namespace = store._modules.getNamespace(path)
 
-  // register in namespace map
+  // register in namespace map 
   if (module.namespaced) {
     if (store._modulesNamespaceMap[namespace] && process.env.NODE_ENV !== 'production') {
       console.error(`[vuex] duplicate namespace ${namespace} for the namespaced module ${path.join('/')}`)
@@ -366,8 +368,8 @@ function installModule (store, rootState, path, module, hot) {
 }
 
 /**
- * make localized dispatch, commit, getters and state
- * if there is no namespace, just use root ones
+ * make localized dispatch, commit, getters and state 进行本地化
+ * if there is no namespace, just use root ones 如果没有命名空间，则使用根
  */
 function makeLocalContext (store, namespace, path) {
   const noNamespace = namespace === ''
@@ -447,6 +449,7 @@ function makeLocalGetters (store, namespace) {
   return store._makeLocalGettersCache[namespace]
 }
 
+// 注册Mutation
 function registerMutation (store, type, handler, local) {
   const entry = store._mutations[type] || (store._mutations[type] = [])
   entry.push(function wrappedMutationHandler (payload) {
@@ -454,6 +457,7 @@ function registerMutation (store, type, handler, local) {
   })
 }
 
+// 注册Action
 function registerAction (store, type, handler, local) {
   const entry = store._actions[type] || (store._actions[type] = [])
   entry.push(function wrappedActionHandler (payload) {
@@ -479,6 +483,7 @@ function registerAction (store, type, handler, local) {
   })
 }
 
+// 注册getter
 function registerGetter (store, type, rawGetter, local) {
   if (store._wrappedGetters[type]) {
     if (process.env.NODE_ENV !== 'production') {
